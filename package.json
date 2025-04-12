@@ -10,6 +10,7 @@
     "appwrite": "^17.0.1",
     "bootstrap": "^5.3.5",
     "lucide-react": "^0.487.0",
+    "node-appwrite": "^15.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-scripts": "5.0.1",
