@@ -74,41 +74,6 @@ const ApiService = {
       return [];
     }
   },
-  
-  getSessionsByLocation: async () => {
-    try {
-      const response = await fetch(`${API_URL}/sessions/by-location`);
-      if (!response.ok) throw new Error('Failed to fetch sessions by location');
-      const data = await response.json();
-      return data.data;
-    } catch (error) {
-      console.error('Error getting sessions by location:', error);
-      return [];
-    }
-  },
-  
-  getSessionsByTime: async () => {
-    try {
-      const response = await fetch(`${API_URL}/sessions/by-time`);
-      if (!response.ok) throw new Error('Failed to fetch sessions by time');
-      const data = await response.json();
-      return data.data;
-    } catch (error) {
-      console.error('Error getting sessions by time:', error);
-      return [];
-    }
-  },
-  
-  getSessionDetails: async (sessionId) => {
-    try {
-      const response = await fetch(`${API_URL}/sessions/details/${sessionId}`);
-      if (!response.ok) throw new Error('Failed to fetch session details');
-      return await response.json();
-    } catch (error) {
-      console.error(`Error getting details for session ${sessionId}:`, error);
-      return null;
-    }
-  },
 
   // Dashboard methods
   getDashboardStats: async () => {
