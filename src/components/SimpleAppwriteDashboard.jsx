@@ -1,76 +1,176 @@
 import React, { useState, useEffect } from 'react';
-
-// Simple mock data for testing
-const mockData = {
-  totalUsers: 1250,
-  activeSessions: 320,
-  newUsers: 45
-};
+import ApiService from '../services/api-service';
+import { User, Users, Clock, Activity } from 'lucide-react';
 
 const SimpleAppwriteDashboard = () => {
-  const [stats, setStats] = useState(mockData);
-  
-  // In a real app, you would fetch from Appwrite here
+  const [userData, setUserData] = useState({
+    userCount: 0,
+    newUsers: 0,
+    recentUsers: [],
+    sessionCount: 0,
+    loading: true,
+    error: null
+  });
+
   useEffect(() => {
-    // This would be replaced with actual API calls
-    console.log("Dashboard mounted");
+    const fetchData = async () => {
+      try {
+        // Fetch dashboard stats from our backend API
+        const stats = await ApiService.getDashboardStats();
+        const recentUsers = await ApiService.getRecentUsers(5);
+        
+        setUserData({
+          userCount: stats.totalUsers,
+          newUsers: stats.newUsers,
+          recentUsers,
+          sessionCount: stats.activeSessions,
+          loading: false,
+          error: null
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setUserData(prev => ({
+          ...prev,
+          loading: false,
+          error: 'Failed to load data from server'
+        }));
+      }
+    };
+
+    fetchData();
   }, []);
 
-  return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold">Appwrite Project Dashboard</h1>
-        <p className="text-gray-600">Monitor your accounts and sessions</p>
-      </header>
+  // Loading state
+  if (userData.loading) {
+    return (
+      <div className="p-4 bg-white rounded shadow">
+        <div className="animate-pulse flex space-x-4">
+          <div className="rounded-full bg-gray-200 h-12 w-12"></div>
+          <div className="flex-1 space-y-4 py-1">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            </div>
+          </div>
+        </div>
+        <div className="text-center mt-4">Loading user data...</div>
+      </div>
+    );
+  }
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {/* Total Users Card */}
-        <div className="bg-white p-4 rounded shadow">
-          <h3 className="text-gray-500 text-sm font-medium">Total Users</h3>
-          <p className="text-2xl font-bold mt-2">{stats.totalUsers}</p>
-        </div>
-        
-        {/* Active Sessions Card */}
-        <div className="bg-white p-4 rounded shadow">
-          <h3 className="text-gray-500 text-sm font-medium">Active Sessions</h3>
-          <p className="text-2xl font-bold mt-2">{stats.activeSessions}</p>
-        </div>
-        
-        {/* New Users Card */}
-        <div className="bg-white p-4 rounded shadow">
-          <h3 className="text-gray-500 text-sm font-medium">New Users (24h)</h3>
-          <p className="text-2xl font-bold mt-2">{stats.newUsers}</p>
+  // Error state
+  if (userData.error) {
+    return (
+      <div className="p-4 bg-white rounded shadow border-l-4 border-red-500">
+        <div className="flex items-center">
+          <div className="text-red-500 mr-3">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p className="font-bold">Error</p>
+            <p className="text-sm">{userData.error}</p>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      <div className="bg-white p-4 rounded shadow">
-        <h2 className="font-bold text-lg mb-4">Recent Users</h2>
-        <table className="min-w-full">
-          <thead>
-            <tr>
-              <th className="text-left pb-2">ID</th>
-              <th className="text-left pb-2">Email</th>
-              <th className="text-left pb-2">Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="py-2">user123</td>
-              <td className="py-2">user1@example.com</td>
-              <td className="py-2">3 hours ago</td>
-            </tr>
-            <tr>
-              <td className="py-2">user456</td>
-              <td className="py-2">user2@example.com</td>
-              <td className="py-2">5 hours ago</td>
-            </tr>
-            <tr>
-              <td className="py-2">user789</td>
-              <td className="py-2">user3@example.com</td>
-              <td className="py-2">1 day ago</td>
-            </tr>
-          </tbody>
-        </table>
+  return (
+    <div className="bg-white shadow rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-6">Appwrite User Dashboard</h2>
+      
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="bg-blue-50 rounded-lg p-4 flex items-center">
+          <div className="rounded-full bg-blue-100 p-3 mr-4">
+            <Users className="text-blue-600" size={24} />
+          </div>
+          <div>
+            <p className="text-sm text-blue-600">Total Users</p>
+            <p className="text-xl font-bold">{userData.userCount.toLocaleString()}</p>
+          </div>
+        </div>
+        
+        <div className="bg-green-50 rounded-lg p-4 flex items-center">
+          <div className="rounded-full bg-green-100 p-3 mr-4">
+            <User className="text-green-600" size={24} />
+          </div>
+          <div>
+            <p className="text-sm text-green-600">New Users (24h)</p>
+            <p className="text-xl font-bold">{userData.newUsers.toLocaleString()}</p>
+          </div>
+        </div>
+        
+        <div className="bg-purple-50 rounded-lg p-4 flex items-center">
+          <div className="rounded-full bg-purple-100 p-3 mr-4">
+            <Activity className="text-purple-600" size={24} />
+          </div>
+          <div>
+            <p className="text-sm text-purple-600">Active Sessions</p>
+            <p className="text-xl font-bold">{userData.sessionCount.toLocaleString()}</p>
+          </div>
+        </div>
+        
+        <div className="bg-yellow-50 rounded-lg p-4 flex items-center">
+          <div className="rounded-full bg-yellow-100 p-3 mr-4">
+            <Clock className="text-yellow-600" size={24} />
+          </div>
+          <div>
+            <p className="text-sm text-yellow-600">Sessions per User</p>
+            <p className="text-xl font-bold">
+              {userData.userCount > 0 ? (userData.sessionCount / userData.userCount).toFixed(2) : '0'}
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Recent Users */}
+      <div>
+        <h3 className="font-bold text-lg mb-4">Recent Users</h3>
+        
+        {userData.recentUsers.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {userData.recentUsers.map(user => (
+                  <tr key={user.$id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {user.$id.substring(0, 8)}...
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.name || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.email || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(user.$createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-4">No users found</p>
+        )}
+      </div>
+      
+      <div className="mt-6 bg-gray-50 p-4 rounded-lg text-sm text-gray-600">
+        <p>
+          <span className="font-bold">Note:</span> This dashboard fetches data from a secure backend server that communicates with Appwrite.
+        </p>
       </div>
     </div>
   );
